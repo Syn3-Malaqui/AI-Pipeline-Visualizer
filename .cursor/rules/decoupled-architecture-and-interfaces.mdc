@@ -1,0 +1,88 @@
+---
+description: Enforce strict decoupled architecture and clean interfaces (no monolith files)
+globs: "**/*.{ts,tsx,js,jsx,vue,svelte,html,css,scss,py,go,java,cs,rb,php,rs}"
+alwaysApply: false
+---
+
+# Strict decoupled architecture + clean interfaces
+
+## Non-negotiables
+
+- **No monolith files**: avoid “everything in one file” (e.g. giant `index.html`/single component doing UI + data + business logic).
+- **Separation of concerns**: split UI, domain/business logic, and infrastructure (network/db/filesystem) into separate modules.
+- **Dependency direction**: higher-level policy (domain/use-cases) must not depend on lower-level details (UI/framework, HTTP client, DB driver).
+- **Interfaces at boundaries**: define small, stable interfaces for infrastructure; inject implementations.
+- **Refactor as you go**: when adding a new capability, first carve a seam (module/function) instead of piling onto an existing “main” file.
+
+## Design rules (use these every time)
+
+- **Define “what” in domain/use-case; “how” in adapters**:
+  - Domain/use-case code expresses rules, validation, decisions.
+  - Adapters implement IO (fetch/db/fs) and map to/from domain types.
+- **Prefer composition over conditionals**: avoid giant switch/if trees in a single function; use small strategy modules where appropriate.
+- **Avoid god-objects and mega-services**: split by capability/bounded context; keep modules cohesive.
+- **Keep interfaces minimal**:
+  - 1 purpose per interface
+  - no “kitchen sink” params
+  - prefer explicit types over `any`/`object`/`Map<string, any>`
+
+## Practical file layout guidance (pick the closest fit)
+
+- **Web app**:
+  - `src/domain/` (entities, value objects, policies)
+  - `src/usecases/` (application services)
+  - `src/adapters/` (http, storage, db, external APIs)
+  - `src/ui/` (components/pages)
+  - `src/shared/` (utilities that are truly shared)
+- **Backend**:
+  - `src/domain/`, `src/usecases/`, `src/adapters/`, `src/transport/` (http/cli), `src/infra/`
+
+## Interface examples (pattern, not exact paths)
+
+### TypeScript (port + adapter)
+
+```ts
+// ✅ domain/ports/UserRepository.ts
+export interface UserRepository {
+  getById(id: string): Promise<User | null>;
+  save(user: User): Promise<void>;
+}
+```
+
+```ts
+// ✅ adapters/db/PostgresUserRepository.ts
+export class PostgresUserRepository implements UserRepository {
+  constructor(private readonly db: PgClient) {}
+  async getById(id: string) { /* ... */ }
+  async save(user: User) { /* ... */ }
+}
+```
+
+```ts
+// ✅ usecases/GetUser.ts
+export class GetUser {
+  constructor(private readonly users: UserRepository) {}
+  async execute(id: string) { /* ...domain rules... */ }
+}
+```
+
+### Python (protocol + implementation)
+
+```python
+# ✅ domain/ports/user_repo.py
+from typing import Protocol, Optional
+
+class UserRepo(Protocol):
+    def get_by_id(self, user_id: str) -> Optional["User"]: ...
+    def save(self, user: "User") -> None: ...
+```
+
+## What to do when you see “jumbled into 1 main file”
+
+- **Extract modules in this order**:
+  - extract pure functions (no IO) first
+  - then extract domain types + validation
+  - then extract interface(s) at IO boundary
+  - lastly extract adapter implementation(s)
+- **Stop the bleed**: never add new code into the monolith before creating a new module for the new behavior.
+

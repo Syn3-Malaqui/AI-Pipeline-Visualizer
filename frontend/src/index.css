@@ -1,0 +1,351 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+:root {
+  --ui-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ui-ease-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ui-dur-1: 160ms;
+  --ui-dur-2: 220ms;
+  --ui-dur-3: 320ms;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+  }
+}
+
+@layer utilities {
+  .ui-reveal {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+    filter: saturate(0.98);
+  }
+
+  .ui-reveal[data-state="in"] {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: saturate(1);
+    transition:
+      opacity var(--ui-dur-2) var(--ui-ease-out),
+      transform var(--ui-dur-2) var(--ui-ease-out),
+      filter var(--ui-dur-2) var(--ui-ease-out);
+  }
+
+  .ui-row-flash {
+    animation: uiRowFlash var(--ui-dur-3) var(--ui-ease-soft) 1;
+  }
+
+  .ui-line-clamp-2 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .ui-token-fade {
+    display: inline;
+    opacity: 0;
+    animation: uiTokenFadeIn 180ms var(--ui-ease-out) forwards;
+  }
+
+  .ui-stream-unit {
+    display: inline;
+    will-change: opacity, transform;
+  }
+
+  .ui-stream-unit[data-new='true'] {
+    opacity: 0;
+    transform: translate3d(0, 1px, 0);
+    animation: uiStreamUnitIn 120ms var(--ui-ease-out) forwards;
+    text-shadow: 0 0 0.6px color-mix(in srgb, currentColor 18%, transparent);
+  }
+
+  .ui-markdown :where(p) {
+    line-height: 1.65;
+    margin: 0.25rem 0;
+    white-space: pre-wrap;
+  }
+
+  .ui-markdown :where(ul, ol) {
+    margin: 0.4rem 0 0.4rem 1.25rem;
+  }
+
+  .ui-markdown :where(li) {
+    margin: 0.15rem 0;
+  }
+
+  .ui-markdown :where(strong) {
+    font-weight: 750;
+  }
+
+  .ui-markdown :where(code) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.92em;
+    background: color-mix(in srgb, var(--color-surface-container-high, #e8ecf7) 70%, transparent);
+    padding: 0.12rem 0.32rem;
+    border-radius: 0.4rem;
+    border: 1px solid color-mix(in srgb, var(--color-outline-variant, #d5d9e6) 55%, transparent);
+  }
+
+  .ui-markdown :where(pre) {
+    margin: 0.6rem 0;
+    padding: 0.85rem;
+    border-radius: 0.9rem;
+    overflow-x: auto;
+    background: #051a3e;
+    color: rgba(186, 224, 255, 0.9);
+    border: 1px solid rgba(213, 217, 230, 0.18);
+  }
+
+  .ui-markdown :where(pre code) {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: inherit;
+  }
+}
+
+@keyframes uiRowFlash {
+  0% {
+    background-color: rgba(0, 82, 204, 0.14);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes uiTokenFadeIn {
+  from {
+    opacity: 0;
+    filter: blur(0.6px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes uiStreamUnitIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 1px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes uiStreamUnitFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-reveal {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  .ui-reveal[data-state="in"] {
+    transition: none;
+  }
+
+  .ui-row-flash {
+    animation: none;
+  }
+
+  .ui-token-fade {
+    animation: none;
+    opacity: 1;
+  }
+
+  /* Keep streaming legible but still "soft" even with reduced motion:
+     avoid translate/text-shadow, but allow a tiny opacity fade. */
+  .ui-stream-unit {
+    transform: none;
+    text-shadow: none;
+  }
+
+  .ui-stream-unit[data-new='true'] {
+    transform: none;
+    text-shadow: none;
+    animation: uiStreamUnitFadeIn 90ms linear forwards;
+  }
+}
+
+/* Pipeline flow (kept as CSS for precise arrows/particle positioning) */
+.pipeline-node {
+  /* Deterministic per-node accent is injected via `--pipeline-node-accent`. */
+  --pipeline-node-accent: #0a57d6;
+}
+
+.pipeline-node::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  /* Subtle “tonal interest” wash + ghost inset, intentionally low alpha. */
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--pipeline-node-accent) 10%, transparent),
+    transparent 58%
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pipeline-node-accent) 12%, transparent);
+  opacity: 0.9;
+  transition:
+    opacity var(--ui-dur-2) var(--ui-ease-out),
+    background-image var(--ui-dur-2) var(--ui-ease-out),
+    box-shadow var(--ui-dur-2) var(--ui-ease-out);
+}
+
+.pipeline-node:hover::after {
+  opacity: 1;
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--pipeline-node-accent) 13%, transparent),
+    transparent 56%
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pipeline-node-accent) 16%, transparent);
+}
+
+.pipeline-node[data-selected='true']::after,
+.pipeline-node[data-active='true']::after {
+  /* Don’t compete with existing ring/active border; keep it even quieter. */
+  opacity: 0.75;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pipeline-node-accent) 10%, transparent);
+}
+
+.flow-container {
+  position: relative;
+  min-height: 100%;
+  width: fit-content;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: .5rem;
+  padding: 4rem;
+}
+
+.flow-line {
+  height: 2px;
+  width: 3rem;
+  background-color: #d5d9e6;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.flow-line.active {
+  background-color: #0a57d6;
+}
+
+.flow-line.completed {
+  background-color: #005463;
+}
+
+.flow-arrow {
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 6px solid #d5d9e6;
+}
+
+.flow-line.active .flow-arrow {
+  border-left-color: #0a57d6;
+}
+
+.flow-line.completed .flow-arrow {
+  border-left-color: #005463;
+}
+
+.data-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background-color: #0a57d6;
+  border-radius: 9999px;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: flowRight 1.5s infinite linear;
+  box-shadow: 0 0 8px rgba(10, 87, 214, 0.55);
+}
+
+@keyframes flowRight {
+  0% {
+    left: 0;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .data-particle {
+    animation: none;
+  }
+}
+
+.canvas-wrapper {
+  overflow: hidden;
+  cursor: grab;
+  height: 100%;
+  touch-action: none;
+  overscroll-behavior: contain;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  background-image: radial-gradient(rgba(213, 217, 230, 0.72) 0.9px, transparent 0.9px);
+  background-size: 20px 20px;
+  background-position: 0 0;
+}
+
+.canvas-wrapper:active {
+  cursor: grabbing;
+}
+
+.flow-stage {
+  width: 100%;
+  height: 100%;
+  transform-origin: 0 0;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

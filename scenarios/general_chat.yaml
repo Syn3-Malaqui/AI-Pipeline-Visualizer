@@ -1,0 +1,20 @@
+id: general-chat
+name: General Chatbot
+description: Plain chat mode (no retrieval/reranking) using the configured chat model.
+pipeline:
+  nodes:
+    - id: ingest
+      label: Query Input
+      kind: ingest
+      enabled: true
+    - id: generate
+      label: Chat Response
+      kind: generate
+      enabled: true
+  edges:
+    - source: ingest
+      target: generate
+config:
+  chat_model: gemma3:1b
+  system_prompt: |
+    You are a helpful assistant. Answer conversationally and clearly.

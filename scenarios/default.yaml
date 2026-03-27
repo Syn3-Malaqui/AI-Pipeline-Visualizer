@@ -1,0 +1,49 @@
+id: default-rag
+name: Default RAG Demo
+description: Basic RAG flow using local Ollama models.
+documents:
+  - docs/rag_intro.md
+pipeline:
+  nodes:
+    - id: ingest
+      label: Query Input
+      kind: ingest
+      enabled: true
+    - id: preprocess
+      label: Preprocess
+      kind: preprocess
+      enabled: true
+    - id: embed
+      label: Embedding
+      kind: embed
+      enabled: true
+    - id: retrieve
+      label: Retrieval
+      kind: retrieve
+      enabled: true
+      config:
+        top_k: 3
+    - id: rerank
+      label: Rerank
+      kind: rerank
+      enabled: false
+    - id: generate
+      label: Generation
+      kind: generate
+      enabled: true
+  edges:
+    - source: ingest
+      target: preprocess
+    - source: preprocess
+      target: embed
+    - source: embed
+      target: retrieve
+    - source: retrieve
+      target: rerank
+    - source: rerank
+      target: generate
+config:
+  embedding_model: embeddinggemma:latest
+  chat_model: gemma3:1b
+  chunk_size: 500
+  chunk_overlap: 50

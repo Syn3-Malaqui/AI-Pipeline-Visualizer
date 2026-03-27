@@ -1,0 +1,44 @@
+---
+description: Architectural Precision UI — surfaces, typography, no harsh borders; follow frontend/DESIGN.md
+globs: frontend/**/*.{tsx,ts,css}
+alwaysApply: false
+---
+
+# Design system: Architectural Precision Layer
+
+**Canonical spec:** `frontend/DESIGN.md` — read it when adding or restyling UI. Tailwind tokens live in `frontend/tailwind.config.js` and `frontend/src/index.css`; map names to that file (e.g. `background`, `surface-container-*`, `primary`, `on-surface`).
+
+## Non-negotiables (from spec)
+
+- **Surfaces over lines:** Prefer **background tonal shifts** and **gap** (`gap-2.5`–`gap-3` or `spacing` scale) to separate regions. **Do not** use 1px solid borders as the default way to section the PDF viewer from sidebars—let canvas vs `surface-container-*` show hierarchy.
+- **No pure black:** Text and dark UI use **`on-surface`** (`#2a3439`), not `#000`.
+- **Document-first:** PDF is the hero; chrome stays minimal—**invisible until needed**.
+- **Technical tags:** Data/status chips use **small radius** (`rounded-sm` / `rounded-md`), not pill `rounded-full`, unless a primitive already standardizes it.
+
+## Typography
+
+- **Headlines / workspace titles:** `font-headline` (Manrope).
+- **Body / UI:** default body font (Inter).
+- **Stamped labels** (MATCH, NO MATCH, etc.): uppercase, `tracking-wide` (~`0.05em`), small label style per spec.
+
+## Semantics
+
+- **Primary actions:** `primary` / `on-primary`, hover toward `primary-dim`. Prefer subtle gradient on primary CTAs when it matches existing button patterns.
+- **AI / smart match affordances:** favor **`tertiary`** for distinction from navy primary.
+- **Match / no-match chips:** `tertiary` vs `error` / `error-container` semantics as in `DESIGN.md` §5–6.
+
+## Depth
+
+- Prefer **tonal lift** (e.g. `surface-container-low` → `surface-container-lowest`) over heavy shadows.
+- **Ambient shadow** for floating panels (e.g. popovers): ~`0 12px 32px rgba(42, 52, 57, 0.06)`; **ghost** dividers: `outline-variant` at low opacity, not harsh rules.
+
+## Mapping / annotation
+
+- **Selection rects:** ~10% `primary` fill, **2px** `primary` stroke, **sharp corners** (`rounded-none`) for zones.
+- **Focus shroud:** when appropriate, dim non-essential UI with **`surface-dim`** at ~40% opacity over a full-area overlay (see `DESIGN.md` §7).
+
+## Practical checklist before merge
+
+- [ ] New layout uses **surface hierarchy** + spacing, not extra 1px borders everywhere.
+- [ ] Colors pulled from **theme tokens**, not one-off hex (except rare edge cases).
+- [ ] Headlines use **`font-headline`** where the spec calls for editorial headers.
