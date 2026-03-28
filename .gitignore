@@ -22,3 +22,10 @@ npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 
+# Medicine RAG demo — generated locally (see scripts/generate_medicine_corpus.py)
+scenarios/medicine_rag/medicines_corpus.md
+scenarios/medicine_rag/medicines_enriched.json
+scenarios/medicine_rag/embedding_cache.json
+scenarios/medicine_rag/.generate_medicine_checkpoint.json
+scenarios/medicine_rag/.generate_medicine_current_stream.txt
+

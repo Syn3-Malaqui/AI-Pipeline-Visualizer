@@ -10,6 +10,17 @@ from src.domain.ports.services import ScenarioRepositoryPort
 from src.domain.validation import validate_scenario
 
 
+def _resolve_document_path(base_dir: Path, relative_path: str) -> Path:
+    """Open `relative_path` under base_dir; if missing, try `{stem}.seed{suffix}` beside it."""
+    target = (base_dir / relative_path).resolve()
+    if target.is_file():
+        return target
+    seed = target.parent / f"{target.stem}.seed{target.suffix}"
+    if seed.is_file():
+        return seed
+    return target
+
+
 class FileScenarioRepository(ScenarioRepositoryPort):
     def __init__(self, scenarios_dir: Path) -> None:
         self._scenarios_dir = scenarios_dir
@@ -45,7 +56,7 @@ class FileScenarioRepository(ScenarioRepositoryPort):
         edges = [PipelineEdge(source=e["source"], target=e["target"]) for e in raw["pipeline"]["edges"]]
         docs: list[str] = []
         for relative_path in raw.get("documents", []):
-            target = (base_dir / relative_path).resolve()
+            target = _resolve_document_path(base_dir, relative_path)
             with target.open("r", encoding="utf-8") as doc_file:
                 docs.append(doc_file.read())
 

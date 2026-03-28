@@ -29,12 +29,13 @@ class OllamaChatAdapter:
         self._base_url = base_url.rstrip("/")
         self._model = model
 
-    async def stream_generate(self, prompt: str) -> AsyncIterator[str]:
+    async def stream_generate(self, prompt: str, *, model: str | None = None) -> AsyncIterator[str]:
+        use_model = model or self._model
         async with httpx.AsyncClient(timeout=120) as client:
             async with client.stream(
                 "POST",
                 f"{self._base_url}/api/generate",
-                json={"model": self._model, "prompt": prompt, "stream": True},
+                json={"model": use_model, "prompt": prompt, "stream": True},
             ) as response:
                 response.raise_for_status()
                 async for line in response.aiter_lines():

@@ -1,0 +1,40 @@
+Here is the output:
+
+[
+  {
+    "id": "med-001",
+    "layman_summary": "Fenodipine is a demo entry that helps lower blood pressure, treats angina and arrhythmia by blocking certain receptors in the heart.",
+    "layman_terms": ["blood pressure pill", "heart medication"],
+    "retrieval_signals": ["beta blocker", "hypertension treatment", "cardiovascular medicine"]
+  },
+  {
+    "id": "med-002",
+    "layman_summary": "Torazol is a demo entry that relieves arthritis symptoms by blocking an enzyme that causes pain and swelling.",
+    "layman_terms": ["arthritis medication", "pain reliever"],
+    "retrieval_signals": ["rheumatoid arthritis treatment", "osteoarthritis relief", "COX-2 inhibitor"]
+  },
+  {
+    "id": "med-003",
+    "layman_summary": "Pitazide is a demo entry that calms anxiety and insomnia by enhancing GABA activity in the brain.",
+    "layman_terms": ["anxiety medication", "sleep aid"],
+    "retrieval_signals": ["benzodiazepine anxiolytic", "short-acting sedative"]
+  },
+  {
+    "id": "med-004",
+    "layman_summary": "Vedolinol is a demo entry that helps manage pain, nausea and anxiety by activating opioid receptors.",
+    "layman_terms": ["pain medication", "nausea relief"],
+    "retrieval_signals": ["opioid agonist", "weak schedule"]
+  },
+  {
+    "id": "med-005",
+    "layman_summary": "Cilostatin is a demo entry that treats depression, anxiety and neurogenic pain by inhibiting serotonin and norepinephrine reuptake.",
+    "layman_terms": ["antidepressant", "pain relief"],
+    "retrieval_signals": ["SNRI antidepressant", "neurotransmitter inhibitor"]
+  },
+  {
+    "id": "med-006",
+    "layman_summary": "Epidrine is a demo entry that calms anxiety and insomnia by enhancing GABA activity in the brain.",
+    "layman_terms": ["anxiety medication", "sleep aid"],
+    "retrieval_signals": ["benzodiazepine anxiolytic", "short-acting sedative"]
+  }
+]

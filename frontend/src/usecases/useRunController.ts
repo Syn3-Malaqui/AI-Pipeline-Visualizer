@@ -36,6 +36,17 @@ export function useRunController(): RunController {
   const MIN_RUNNING_MS = 1000
   const MIN_RUNNING_GENERATE_MS = 180
 
+  function isStreamingLlmNode(nodeId: string | null | undefined) {
+    return nodeId === 'generate'
+  }
+
+  /** Short min-running for nodes that finish quickly (e.g. template wrap, no token stream). */
+  function nodeCompletedMinMs(nodeId: string | null | undefined) {
+    if (nodeId === 'generate') return MIN_RUNNING_GENERATE_MS
+    if (nodeId === 'standardize') return MIN_RUNNING_GENERATE_MS
+    return MIN_RUNNING_MS
+  }
+
   const visibleEvents = useMemo(() => events.slice(0, playback.cursor), [events, playback.cursor])
 
   const activeNodeId = useMemo(() => {
@@ -81,7 +92,7 @@ export function useRunController(): RunController {
     if (event.kind === 'node_completed' && event.nodeId) {
       const startedAt = state.nodeStartedAt.get(event.nodeId)
       if (startedAt === undefined) return true
-      const minMs = event.nodeId === 'generate' ? MIN_RUNNING_GENERATE_MS : MIN_RUNNING_MS
+      const minMs = nodeCompletedMinMs(event.nodeId)
       return now - startedAt >= minMs
     }
 
@@ -109,7 +120,7 @@ export function useRunController(): RunController {
         let cursor = prev.cursor
         let consumed = 0
         const revealState = revealTimesRef.current
-        const isGeneratePhase = revealState.runningNodeId === 'generate'
+        const isGeneratePhase = isStreamingLlmNode(revealState.runningNodeId)
 
         // Keep the overall visualizer cadence at 200ms, but allow a quicker 60ms cadence
         // specifically during the Generation phase so token streaming keeps up.

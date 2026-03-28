@@ -1,0 +1,88 @@
+id: medicine-rag
+name: Medicine RAG Demo (3 LLM layers)
+description: >
+  Synthetic medicine-style corpus for pipeline visualization only—not medical advice.
+  Run scripts/generate_medicine_corpus.py to build a full corpus; otherwise the seed file is used.
+documents:
+  - medicine_rag/medicine_disclaimer.md
+  - medicine_rag/medicines_corpus.md
+pipeline:
+  nodes:
+    - id: ingest
+      label: Query Input
+      kind: ingest
+      enabled: true
+    - id: preprocess
+      label: Preprocess
+      kind: preprocess
+      enabled: true
+    - id: embed
+      label: Embedding
+      kind: embed
+      enabled: true
+    - id: retrieve
+      label: Retrieval
+      kind: retrieve
+      enabled: true
+      config:
+        top_k: 10
+        display_k: 5
+    - id: tfidf_retrieve
+      label: TF-IDF Retrieval
+      kind: tfidf_retrieve
+      enabled: true
+      config:
+        top_k: 10
+        display_k: 5
+    - id: rerank
+      label: Rerank
+      kind: rerank
+      enabled: false
+    - id: filter
+      label: Relevance Filter
+      kind: filter
+      enabled: true
+    - id: diagnose
+      label: Formal response layer
+      kind: generate
+      enabled: true
+    - id: standardize
+      label: Standardized output
+      kind: generate
+      enabled: true
+  edges:
+    - source: ingest
+      target: preprocess
+    - source: preprocess
+      target: embed
+    - source: embed
+      target: retrieve
+    - source: retrieve
+      target: tfidf_retrieve
+    - source: tfidf_retrieve
+      target: rerank
+    - source: rerank
+      target: filter
+    - source: filter
+      target: diagnose
+    - source: diagnose
+      target: standardize
+config:
+  embedding_model: embeddinggemma:latest
+  chat_model: gemma3:4b
+  chunk_size: 500
+  chunk_overlap: 50
+  # Precomputed vectors from scripts/build_embedding_cache.py (optional; speeds up retrieve)
+  embedding_cache: medicine_rag/embedding_cache.json
+  # Canonical good-response example used as a one-shot demonstration in the synthesize prompt.
+  # Omit the Hello / Thank-you wrapper — standardize adds those deterministically.
+  response_example: |
+    1.  **Vedolinol** (`med-004`) is an opioid agonist, weak, indicated for pain, nausea, and anxiety.
+    2.  **Gonist** (`med-002`) is a strong opioid agonist indicated for pain, with a risk of dependence and respiratory depression.
+    3.  **Nitropridazine** (`med-040`) activates mu opioid receptors and is used with caution in patients with respiratory depression.
+  # Shown in synthesize prompt only when the user query looks like a drug-vs-drug comparison.
+  comparison_table_example: |
+    | Medication | Drug class | Indications | Mechanism | Cautions |
+    | --- | --- | --- | --- | --- |
+    | **Vedolinol** (`med-004`) | Opioid agonist, weak (demo) | Pain, nausea, anxiety | Activates opioid receptors; analgesic effect | Respiratory depression, addiction risk (demo) |
+    | **Torazol** (`med-002`) | NSAID, preferential COX-2 | Arthritis, osteoarthritis | Blocks COX-2, reduces prostaglandins | CV/GI risk (demo) |

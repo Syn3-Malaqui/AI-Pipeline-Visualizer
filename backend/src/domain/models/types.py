@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-NodeKind = Literal["ingest", "preprocess", "embed", "retrieve", "rerank", "generate"]
+NodeKind = Literal["ingest", "preprocess", "embed", "retrieve", "tfidf_retrieve", "rerank", "filter", "generate"]
 EventKind = Literal[
     "run_started",
     "node_started",

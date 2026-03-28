@@ -5,6 +5,8 @@ import type { PipelineEvent } from '../../shared/types'
 type NodeInspectorProps = {
   selectedNodeId: string | null
   events: PipelineEvent[]
+  className?: string
+  onClearSelection?: () => void
 }
 
 type NodeEventGroup = {
@@ -57,6 +59,13 @@ function getPrefersReducedMotion() {
   return window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false
 }
 
+function formatDiagnoseResponseMode(mode: string): string {
+  if (mode === 'comparison_table') return 'Comparison table'
+  if (mode === 'numbered_list') return 'Numbered list'
+  if (mode === 'details') return 'Details'
+  return mode
+}
+
 function NodeEventsTable(props: { nodeId: string; events: PipelineEvent[]; running: boolean }) {
   const lastLatestSeqRef = useRef<number | null>(null)
   const [flashSeq, setFlashSeq] = useState<number | null>(null)
@@ -64,6 +73,14 @@ function NodeEventsTable(props: { nodeId: string; events: PipelineEvent[]; runni
   const eventsNewestFirst = useMemo(() => [...props.events].sort((a, b) => b.tMs - a.tMs), [props.events])
   const latest = eventsNewestFirst[0] ?? null
   const latestMem = [...props.events].reverse().map((e) => getMaybeMemory(e.payload)).find(Boolean) ?? null
+  const diagnoseResponseLabel = useMemo(() => {
+    if (props.nodeId !== 'diagnose') return null
+    for (const e of [...props.events].reverse()) {
+      const m = e.payload.responseMode
+      if (typeof m === 'string' && m.length > 0) return formatDiagnoseResponseMode(m)
+    }
+    return null
+  }, [props.events, props.nodeId])
   const started = props.events.find((event) => event.kind === 'node_started')
   const completed = props.events.findLast((event) => event.kind === 'node_completed')
   const latency = started && completed ? completed.tMs - started.tMs : null
@@ -81,48 +98,55 @@ function NodeEventsTable(props: { nodeId: string; events: PipelineEvent[]; runni
   }, [eventsNewestFirst])
 
   return (
-    <div className="rounded-xl bg-surface-container-lowest border border-outline-variant/30 overflow-hidden shadow-sm">
-      <div className="px-6 h-12 bg-surface-container-low flex items-center justify-between border-b border-outline-variant/10">
-        <div className="flex items-center gap-3">
-          <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Node</span>
-          <span className="px-3 py-1 bg-primary-container/10 text-primary border border-primary-container/20 rounded-full text-[10px] font-bold">
+    <div className="rounded-xl bg-surface border border-outline-variant/50 overflow-hidden shadow-md shadow-on-surface/[0.06] ring-1 ring-on-surface/[0.04]">
+      <div className="px-5 h-12 bg-gradient-to-r from-primary-fixed/55 via-surface-container-high to-surface-container-high flex items-center justify-between border-b border-outline-variant/35">
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-[11px] font-bold text-on-surface/65 uppercase tracking-wider">Node</span>
+          <span className="px-3 py-1 bg-primary/14 text-primary border border-primary/30 rounded-full text-[10px] font-bold shadow-sm">
             {props.nodeId}
           </span>
+          {diagnoseResponseLabel ? (
+            <span className="px-3 py-1 bg-secondary/12 text-secondary border border-secondary/28 rounded-full text-[10px] font-bold shadow-sm">
+              Response: {diagnoseResponseLabel}
+            </span>
+          ) : null}
         </div>
-        <div className="flex items-center gap-4 text-[11px] font-medium text-on-surface-variant">
+        <div className="flex items-center gap-4 text-[11px] font-semibold text-on-surface/80">
           <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-[18px]">schedule</span>
-            <span className="font-mono">{latency !== null ? `${Math.max(0, Math.round(latency))}ms` : props.running ? '—' : '—'}</span>
+            <span className="material-symbols-outlined text-[18px] text-primary/80">schedule</span>
+            <span className="font-mono tabular-nums">
+              {latency !== null ? `${Math.max(0, Math.round(latency))}ms` : props.running ? '—' : '—'}
+            </span>
           </span>
           {latestMem ? (
             <span className="flex items-center gap-1">
-              <span className="material-symbols-outlined text-[18px]">memory</span>
-              <span className="font-mono">{latestMem.value}</span>
+              <span className="material-symbols-outlined text-[18px] text-secondary">memory</span>
+              <span className="font-mono tabular-nums">{latestMem.value}</span>
             </span>
           ) : null}
         </div>
       </div>
 
-      <div className="overflow-hidden">
+      <div className="overflow-hidden bg-surface">
         <div className="overflow-y-auto custom-scrollbar max-h-[clamp(10rem,22vh,16rem)]">
           <table className="w-full text-left border-separate border-spacing-0">
-            <thead className="sticky top-0 bg-surface-container-low z-10 shadow-sm">
+            <thead className="sticky top-0 z-10 bg-surface-container-high/95 backdrop-blur-sm border-b border-outline-variant/35 shadow-[0_1px_0_rgba(5,26,62,0.06)]">
               <tr>
-                <th className="py-3 px-6 text-[10px] font-bold text-outline uppercase tracking-wider border-b border-outline-variant/10">
+                <th className="py-3 px-5 text-[10px] font-bold text-on-surface/72 uppercase tracking-wider">
                   Timestamp
                 </th>
-                <th className="py-3 px-6 text-[10px] font-bold text-outline uppercase tracking-wider border-b border-outline-variant/10">
+                <th className="py-3 px-5 text-[10px] font-bold text-on-surface/72 uppercase tracking-wider">
                   Action
                 </th>
-                <th className="py-3 px-6 text-[10px] font-bold text-outline uppercase tracking-wider border-b border-outline-variant/10">
+                <th className="py-3 px-5 text-[10px] font-bold text-on-surface/72 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="py-3 px-6 text-[10px] font-bold text-outline uppercase tracking-wider border-b border-outline-variant/10">
-                  Data Fragment
+                <th className="py-3 px-5 text-[10px] font-bold text-on-surface/72 uppercase tracking-wider">
+                  Data fragment
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-outline-variant/5">
+            <tbody className="divide-y divide-outline-variant/25">
               {eventsNewestFirst.map((event, idx) => {
                 const isLatest = idx === 0
                 const status =
@@ -136,21 +160,23 @@ function NodeEventsTable(props: { nodeId: string; events: PipelineEvent[]; runni
                 const flash = flashSeq !== null && flashSeq === event.seq
                 const rowTone =
                   isLatest && props.running
-                    ? `bg-primary/5 hover:bg-primary/10 ${flash ? 'ui-row-flash' : ''}`
-                    : `hover:bg-surface-container-high/50 ${flash ? 'ui-row-flash' : ''}`
+                    ? `bg-primary/[0.09] hover:bg-primary/[0.12] ${flash ? 'ui-row-flash' : ''}`
+                    : idx % 2 === 1
+                      ? `bg-surface-container-low/70 hover:bg-surface-container-high/55 ${flash ? 'ui-row-flash' : ''}`
+                      : `hover:bg-surface-container-high/40 ${flash ? 'ui-row-flash' : ''}`
 
                 return (
                   <tr key={event.seq} className={`transition-colors ${rowTone}`}>
-                    <td className="py-2.5 px-6 font-mono text-[11px] text-on-surface-variant">
+                    <td className="py-2.5 px-5 font-mono text-[11px] text-on-surface/78 tabular-nums">
                       {formatTMs(event.tMs)}
                     </td>
-                    <td className="py-2.5 px-6 text-xs font-medium">
+                    <td className="py-2.5 px-5 text-xs font-semibold text-on-surface">
                       {event.kind.replaceAll('_', ' ').replace(/\b\w/g, (m) => m.toUpperCase())}
                     </td>
-                    <td className="py-2.5 px-6">
+                    <td className="py-2.5 px-5">
                       {status === 'Success' ? (
                         <div className="flex items-center gap-1.5 text-[10px] font-semibold text-tertiary">
-                          <span className="w-1.5 h-1.5 rounded-full bg-tertiary" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-tertiary shadow-[0_0_0_1px_rgba(0,84,99,0.25)]" />
                           Success
                         </div>
                       ) : status === 'Running' ? (
@@ -164,14 +190,14 @@ function NodeEventsTable(props: { nodeId: string; events: PipelineEvent[]; runni
                           Error
                         </div>
                       ) : (
-                        <div className="flex items-center gap-1.5 text-[10px] font-semibold text-outline">
-                          <span className="w-1.5 h-1.5 rounded-full bg-outline/40" />
+                        <div className="flex items-center gap-1.5 text-[10px] font-semibold text-secondary">
+                          <span className="w-1.5 h-1.5 rounded-full bg-secondary/70" />
                           Event
                         </div>
                       )}
                     </td>
-                    <td className="py-2.5 px-6">
-                      <div className="bg-surface-container-highest/30 px-2 py-1 rounded text-[10px] font-mono text-outline truncate max-w-[240px]">
+                    <td className="py-2.5 px-5">
+                      <div className="bg-surface-container-high/95 border border-outline-variant/60 px-2.5 py-1.5 rounded-lg text-[10px] font-mono text-on-surface/92 leading-snug truncate max-w-[240px] shadow-inner shadow-on-surface/[0.04]">
                         {truncateFragment(event.payload, 120)}
                       </div>
                     </td>
@@ -182,14 +208,14 @@ function NodeEventsTable(props: { nodeId: string; events: PipelineEvent[]; runni
           </table>
         </div>
         {latest ? (
-          <div className="px-6 py-3 border-t border-outline-variant/10 bg-surface">
+          <div className="px-5 py-3.5 border-t-2 border-outline-variant/40 bg-gradient-to-b from-primary-fixed/25 to-surface-container-high/40">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[10px] font-bold text-outline uppercase tracking-wider">Latest</span>
-              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-on-surface/70 uppercase tracking-wider">Latest</span>
+              <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
                 {latest.kind.replaceAll('_', ' ')}
               </span>
             </div>
-            <div className="mt-1 text-[11px] text-on-surface/55 italic ui-line-clamp-2">
+            <div className="mt-2 text-xs font-mono text-on-surface/88 leading-relaxed ui-line-clamp-2">
               {truncateFragment(latest.payload, 220)}
             </div>
           </div>
@@ -237,16 +263,24 @@ export function NodeInspector(props: NodeInspectorProps) {
     }
   }, [props.selectedNodeId, selectedLatestSeq])
 
+  const rootClass =
+    `bg-surface-container-low flex flex-col min-h-0 ${props.className ?? ''}`.trim()
+
   return (
-    <aside className="h-[clamp(18rem,34vh,22rem)] border-t border-outline-variant/30 bg-surface-container-low flex flex-col min-h-0">
-      <div className="px-6 h-12 flex items-center justify-between border-b border-outline-variant/10 bg-surface-container-low">
+    <aside className={rootClass}>
+      <div className="px-6 h-12 shrink-0 flex items-center justify-between border-b border-outline-variant/10 bg-surface-container-low">
         <div className="flex items-center gap-3">
           <h2 className="text-sm font-bold text-on-background font-headline">Node Inspector</h2>
           <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full border border-primary/20">
             {props.selectedNodeId ?? 'Select a node'}
           </span>
         </div>
-        <button type="button" className="text-outline hover:text-on-surface transition-colors" aria-label="Close inspector">
+        <button
+          type="button"
+          className="text-outline hover:text-on-surface transition-colors"
+          aria-label="Clear node selection"
+          onClick={() => props.onClearSelection?.()}
+        >
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>

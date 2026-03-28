@@ -22,10 +22,22 @@ pipeline:
       kind: retrieve
       enabled: true
       config:
-        top_k: 3
+        top_k: 10
+        display_k: 5
+    - id: tfidf_retrieve
+      label: TF-IDF Retrieval
+      kind: tfidf_retrieve
+      enabled: true
+      config:
+        top_k: 10
+        display_k: 5
     - id: rerank
       label: Rerank
       kind: rerank
+      enabled: false
+    - id: filter
+      label: Relevance Filter
+      kind: filter
       enabled: false
     - id: generate
       label: Generation
@@ -39,11 +51,15 @@ pipeline:
     - source: embed
       target: retrieve
     - source: retrieve
+      target: tfidf_retrieve
+    - source: tfidf_retrieve
       target: rerank
     - source: rerank
+      target: filter
+    - source: filter
       target: generate
 config:
   embedding_model: embeddinggemma:latest
-  chat_model: gemma3:1b
+  chat_model: gemma3:4b
   chunk_size: 500
   chunk_overlap: 50

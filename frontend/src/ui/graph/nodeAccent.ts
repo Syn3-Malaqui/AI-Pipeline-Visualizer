@@ -25,8 +25,11 @@ const PALETTE_BY_KIND: Record<string, readonly string[]> = {
   Preprocess: ['#0a57d6', '#0052cc', '#003d9b'],
   Embedding: ['#005463', '#007084', '#48d7f9'],
   Search: ['#005463', '#007084', '#0a57d6'],
+  TfIdf: ['#007084', '#005463', '#48d7f9'],
+  Filter: ['#0052cc', '#003d9b', '#0a57d6'],
   Scoring: ['#0040a2', '#0a57d6', '#005463'],
   LLM: ['#005463', '#0a57d6', '#003d9b'],
+  Format: ['#005463', '#007084', '#0a57d6'],
 }
 
 const FALLBACK = ['#0a57d6', '#005463', '#003d9b'] as const

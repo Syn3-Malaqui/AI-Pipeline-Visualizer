@@ -88,6 +88,14 @@
     margin: 0.4rem 0 0.4rem 1.25rem;
   }
 
+  .ui-markdown :where(ol) {
+    list-style-type: decimal;
+  }
+
+  .ui-markdown :where(ul) {
+    list-style-type: disc;
+  }
+
   .ui-markdown :where(li) {
     margin: 0.15rem 0;
   }
@@ -120,6 +128,40 @@
     border: 0;
     padding: 0;
     color: inherit;
+  }
+
+  .ui-markdown :where(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875em;
+    line-height: 1.45;
+    margin: 0.65rem 0;
+    border: 1px solid color-mix(in srgb, var(--color-outline-variant, #d5d9e6) 80%, transparent);
+    border-radius: 0.65rem;
+    overflow: hidden;
+  }
+
+  .ui-markdown :where(thead) {
+    background: color-mix(in srgb, var(--color-surface-container-high, #e8ecf7) 85%, transparent);
+  }
+
+  .ui-markdown :where(th, td) {
+    border: 1px solid color-mix(in srgb, var(--color-outline-variant, #d5d9e6) 65%, transparent);
+    padding: 0.5rem 0.65rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .ui-markdown :where(th) {
+    font-weight: 750;
+    font-size: 0.85em;
+    text-transform: none;
+    letter-spacing: 0.01em;
+    color: color-mix(in srgb, var(--color-on-surface, #1a1c1e) 88%, transparent);
+  }
+
+  .ui-markdown :where(tbody tr:nth-child(even)) {
+    background: color-mix(in srgb, var(--color-surface-container-low, #f4f5f9) 55%, transparent);
   }
 }
 
@@ -194,6 +236,74 @@
     transform: none;
     text-shadow: none;
     animation: uiStreamUnitFadeIn 90ms linear forwards;
+  }
+}
+
+@keyframes chunkListExpand {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+  to {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+
+@keyframes chunkRowIn {
+  from {
+    opacity: 0;
+    transform: translateY(7px) scaleY(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+.chunk-list-wrap {
+  display: grid;
+  animation: chunkListExpand 420ms var(--ui-ease-out) both;
+}
+
+.chunk-list-inner {
+  overflow: hidden;
+}
+
+.chunk-row {
+  transform-origin: top center;
+  animation: chunkRowIn 280ms var(--ui-ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chunk-list-wrap {
+    animation: none;
+  }
+  .chunk-row {
+    animation: none;
+  }
+}
+
+@keyframes pipelineNodeEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+    filter: blur(0.8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+.pipeline-node-wrap {
+  animation: pipelineNodeEnter 400ms var(--ui-ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pipeline-node-wrap {
+    animation: none;
   }
 }
 

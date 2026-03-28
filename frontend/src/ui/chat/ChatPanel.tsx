@@ -1,7 +1,6 @@
 import type { PipelineEvent, ScenarioSummary } from '../../shared/types'
 import { MarkdownBlock } from './MarkdownBlock'
 import { StreamingMarkdown } from './StreamingMarkdown'
-import { StreamingText } from './StreamingText'
 
 type ChatPanelProps = {
   scenarios: ScenarioSummary[]
@@ -20,6 +19,7 @@ export function ChatPanel(props: ChatPanelProps) {
   )
   const selectedScenario = props.scenarios.find((s) => s.id === props.selectedScenarioId) ?? null
   const isGeneralChat = selectedScenario?.id === 'general-chat'
+  const isMedicineDemo = selectedScenario?.id === 'medicine-rag'
   const tokenEvents = props.events.filter((event) => event.kind === 'token')
 
   return (
@@ -31,7 +31,9 @@ export function ChatPanel(props: ChatPanelProps) {
         <p className="text-on-surface-variant text-sm">
           {isGeneralChat
             ? 'Chat with a plain LLM response (no retrieval).'
-            : 'Ask a question and watch each node process data in real time.'}
+            : isMedicineDemo
+              ? 'Demo only: synthetic corpus—not medical advice. Ask a medicine-style question to see the 3-layer LLM pipeline.'
+              : 'Ask a question and watch each node process data in real time.'}
         </p>
       </header>
 
@@ -69,7 +71,6 @@ export function ChatPanel(props: ChatPanelProps) {
           const query = typeof input === 'string' ? input.trim() : ''
           if (!query) return
           props.onSendQuery(query)
-          e.currentTarget.reset()
         }}
       >
         <div className="space-y-2">
@@ -81,7 +82,13 @@ export function ChatPanel(props: ChatPanelProps) {
             name="query"
             id="query-input"
             className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 text-sm min-h-[120px] focus:outline-none focus:ring-2 focus:ring-primary/20 outline-none resize-none transition-shadow"
-            placeholder={isGeneralChat ? 'Ask anything…' : 'Enter your query about RAG, embeddings, or retrieval...'}
+            placeholder={
+              isGeneralChat
+                ? 'Ask anything…'
+                : isMedicineDemo
+                  ? 'e.g. What should I take for a tension headache? (demo only)'
+                  : 'Enter your query about RAG, embeddings, or retrieval...'
+            }
             disabled={props.isRunning || !props.selectedScenarioId}
           />
           <div className="absolute bottom-4 right-4 flex items-center gap-2">

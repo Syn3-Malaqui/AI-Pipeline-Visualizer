@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react'
 import { fetchScenarios } from '../adapters/api/httpClient'
 import type { ScenarioSummary } from '../shared/types'
 
+/** Default scenario when present in the API list (otherwise first item). */
+const DEFAULT_SCENARIO_ID = 'medicine-rag'
+
 export function useScenarioController() {
   const [scenarios, setScenarios] = useState<ScenarioSummary[]>([])
   const [selectedScenarioId, setSelectedScenarioId] = useState('')
@@ -15,7 +18,11 @@ export function useScenarioController() {
       .then((data) => {
         if (!mounted) return
         setScenarios(data)
-        setSelectedScenarioId((prev) => prev || data[0]?.id || '')
+        setSelectedScenarioId((prev) => {
+          if (prev) return prev
+          const preferred = data.find((s) => s.id === DEFAULT_SCENARIO_ID)
+          return preferred?.id ?? data[0]?.id ?? ''
+        })
         setError(null)
       })
       .catch((err: unknown) => {
