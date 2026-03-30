@@ -9,7 +9,9 @@ src/adapters/scenario_fs/__init__.py
 src/adapters/scenario_fs/repository.py
 src/adapters/vector/__init__.py
 src/adapters/vector/in_memory_index.py
+src/adapters/vector/tfidf_index.py
 src/domain/__init__.py
+src/domain/chunking.py
 src/domain/validation.py
 src/domain/models/__init__.py
 src/domain/models/types.py
